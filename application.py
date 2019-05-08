@@ -19,7 +19,11 @@ def hello():
         df.loc[int(task.RowKey)] = [task.Text, task.Updated.strftime("%Y/%m/%d %H:%M:%S"), task.Completed]
 	
     return render_template('index.html', table=df.values.tolist())
-    
+   
+@app.route("/video", methods=("GET", "POST"))
+def hello2():
+    return render_template('video.html')
+
 if __name__ == "__main__":
     app.run()
    
