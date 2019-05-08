@@ -18,7 +18,7 @@ def hello():
     for task in tasks:
         df.loc[int(task.RowKey)] = [task.Text, task.Updated.strftime("%Y/%m/%d %H:%M:%S"), task.Completed]
 	
-    return render_template('index.html', tables=[df.to_html(classes='data', header="true")])
+    return render_template('index.html', table=df.values.tolist())
     
 if __name__ == "__main__":
     app.run()

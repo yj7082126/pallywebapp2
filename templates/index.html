@@ -2,12 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <title>Title</title>
 </head>
 <body>
 
-{% for table in tables %}
-            {{ table|safe }}
-{% endfor %}
+<table border="1" class="dataframe data">
+	<thead>    
+		<tr style="text-align: right;">    
+			<th>Text</th>      
+			<th>Updated</th>      
+			<th>Completed</th>    
+		</tr>  
+	</thead>  
+	<tbody>  
+		{% for row in table %}
+			<tr>        
+				<td>{{row[0]}}</td>     
+				<td>{{row[1]}}</td>
+				{% if row[2] == True %}
+					<td><input type=checkbox id="id_{{row[0]}}" checked=True></td>  
+				{% else %}
+					<td><input type=checkbox id="id_{{row[0]}}"></td>  
+				{% endif %}
+ 
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
 </body>
 </html>
