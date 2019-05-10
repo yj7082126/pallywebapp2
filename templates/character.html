@@ -16,7 +16,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
-	{{ table|safe }}
-
+<form action="{{ url_for('hello3') }}" method="POST">	
+<table border="1" class="dataframe data">
+	<thead>    
+		<tr style="text-align: right;">    
+			<th>Character</th>      
+			<th>Selected</th>        
+		</tr>  
+	</thead>  
+	<tbody>  
+		{% for row in table %}
+			<tr>        
+				<td>{{row[0]}}</td>     
+				{% if row[1] == True %}
+					<td>
+						<input type="radio" id="id_{{row[0]}}" name="chara" value="{{row[0]}}" checked=True>
+					</td>  
+				{% else %}
+					<td>
+						<input type="radio" id="id_{{row[0]}}" name="chara" value="{{row[0]}}">
+					</td>  
+				{% endif %}
+			</tr>
+		{% endfor %}
+	</tbody>
+	<input type="submit" value="Submit">
+	</form>
+</table>
+</form>
 </body>
 </html>
