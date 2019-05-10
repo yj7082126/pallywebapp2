@@ -22,6 +22,9 @@ class Task(object):
         
 @app.route("/", methods=["GET", "POST"])
 def hello():
+    account = CloudStorageAccount(account_name, account_key)
+    table_service = account.create_table_service()
+    
     if request.method == 'POST':
         print(dict(request.form).keys[0])
     else:
@@ -40,6 +43,9 @@ def hello2():
 
 @app.route("/character", methods=["GET", "POST"])
 def hello3():
+    account = CloudStorageAccount(account_name, account_key)
+    table_service = account.create_table_service()
+    
     df2 = pd.DataFrame(columns=['PartitionKey', 'RowKey', 'Character', 'URL', 'Selected'])
     tasks = table_service.query_entities(table_name2, filter="PartitionKey eq 'character'")
     for task in tasks:
@@ -60,9 +66,6 @@ def hello3():
         return render_template('character.html', table=df2[['Character', 'Selected']].values.tolist())
     
 if __name__ == "__main__":
-    account = CloudStorageAccount(account_name, account_key)
-    table_service = account.create_table_service()
-    
     app.run(debug=True)
    
     
