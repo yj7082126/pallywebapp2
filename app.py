@@ -39,6 +39,10 @@ def hello():
    
 @app.route("/video", methods=["GET", "POST"])
 def hello2():
+    if request.method == "POST":
+        ip = request.form["ip"]
+        print(ip)
+        return redirect("https://" + ip)
     return render_template('video.html')
 
 @app.route("/character", methods=["GET", "POST"])
