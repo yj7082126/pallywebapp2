@@ -91,8 +91,8 @@ def hello3():
     else:
         return render_template('character.html', table=df2[['Character', 'Selected']].values.tolist())
     
-if __name__ == "__main__":
-    app.run(debug=True)
+# if __name__ == "__main__":
+    # app.run(debug=True)
    
     
 
