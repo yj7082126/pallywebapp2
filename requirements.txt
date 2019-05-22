@@ -8,3 +8,4 @@ MarkupSafe==1.0
 Werkzeug==0.14.1
 pandas==0.23.4
 azure-storage==0.36.0
+pyodbc==4.0.24
