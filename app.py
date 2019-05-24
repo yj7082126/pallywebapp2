@@ -1,4 +1,3 @@
-from azure.storage import CloudStorageAccount
 from flask import Flask, request, render_template, redirect
 from flask_table import Table, Col
 import pandas as pd
@@ -33,8 +32,12 @@ class Task(object):
         self.createAt = createAt
         self.trial = trial
         self.seconds = seconds
-        
-@app.route("/", methods=["GET", "POST"])
+ 
+@app.route("/", methods=["GET", "POST"])       
+def hello_main():
+    return render_template('index.html')
+
+@app.route("/results", methods=["GET", "POST"])
 def hello():
     cnxn = pyodbc.connect("Driver=" + driver + ";Server=" + server 
                       + ",1433;Database=" + database + 
@@ -54,10 +57,10 @@ def hello():
     if request.method == 'POST':
         print(dict(request.form).keys[0])
     else:
-        table = TaskTable(df2.to_dict(orient='records'))
-        table.border = True
+        table = TaskTable(df2.to_dict(orient='records'), table_id="dataTable",
+                          classes=["table", "table-bordered"])
         
-    return render_template('index.html', table = table.__html__())
+    return render_template('tables.html', table = table.__html__())
    
 @app.route("/video", methods=["GET", "POST"])
 def hello2():
@@ -69,30 +72,38 @@ def hello2():
 
 @app.route("/character", methods=["GET", "POST"])
 def hello3():
-    account = CloudStorageAccount(account_name, account_key)
-    table_service = account.create_table_service()
+    cnxn = pyodbc.connect("Driver=" + driver + ";Server=" + server 
+                      + ",1433;Database=" + database + 
+                      ";Uid=" + username + ";Pwd=" + password + ";")
+    cnxn.add_output_converter(-155, handle_datetimeoffset)
+    cursor = cnxn.cursor()
+    cursor.execute("SELECT * FROM [dbo].[Character1]")
+    row = cursor.fetchall()
     
-    df2 = pd.DataFrame(columns=['PartitionKey', 'RowKey', 'Character', 'URL', 'Selected'])
-    tasks = table_service.query_entities(table_name2, filter="PartitionKey eq 'character'")
-    for task in tasks:
-        df2.loc[int(task.RowKey)] = [task.PartitionKey, task.RowKey, 
-                task.Character, task.URL, task.Selected]
+    df = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt", 
+                                    "version", "deleted", "name", 
+                                    "selected", "character"])
+    
+    df2 = df[['name', 'selected', 'character']]
+
     if request.method == "POST":
-        df2.loc[df2['Character'] == request.form['chara'], "Selected"] = True
-        df2.loc[df2['Character'] != request.form['chara'], "Selected"] = False
-        table_service.update_entity(table_name2, 
-            df2.loc[df2['Character'] == request.form['chara'], ].to_dict('records')[0])
+        df2.loc[df2['name'] == request.form['chara'], "selected"] = True
+        df2.loc[df2['name'] != request.form['chara'], "selected"] = False
         
-        elements = df2.loc[df2['Character'] != request.form['chara'], ]
+        cursor.execute("""UPDATE [dbo].[Character1] SET selected = 1 
+                       WHERE name = '""" + request.form['chara'] + "'")
+        
+        elements = df2.loc[df2['name'] != request.form['chara'], ]
         for index, row in elements.iterrows():
-            table_service.update_entity(table_name2, row.to_dict())
-            
-        return render_template('character.html', table=df2[['Character', 'Selected']].values.tolist())
+            cursor.execute("""UPDATE [dbo].[Character1] SET selected = 0 
+                       WHERE name = '""" + row['name'] + "'")
+        cnxn.commit()   
+        return render_template('character.html', table=df2.values.tolist())
     else:
-        return render_template('character.html', table=df2[['Character', 'Selected']].values.tolist())
+        return render_template('character.html', table=df2.values.tolist())
     
-# if __name__ == "__main__":
-    # app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 
