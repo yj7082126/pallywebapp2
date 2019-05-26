@@ -101,6 +101,40 @@ def hello3():
         return render_template('character.html', table=df2.values.tolist())
     else:
         return render_template('character.html', table=df2.values.tolist())
+   
+@app.route("/setting", methods=["GET", "POST"])
+def hello4():
+    cnxn = pyodbc.connect("Driver=" + driver + ";Server=" + server 
+                      + ",1433;Database=" + database + 
+                      ";Uid=" + username + ";Pwd=" + password + ";")
+    cnxn.add_output_converter(-155, handle_datetimeoffset)
+    cursor = cnxn.cursor()
+    cursor.execute("SELECT * FROM [dbo].[Settings]")
+    row = cursor.fetchall()
+    
+    df = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt", 
+                                    "version", "deleted", "name", 
+                                    "value"])
+    
+    df2 = df[['name', 'value']]
+
+    if request.method == "POST":
+        newList = request.form.getlist('chara')
+        
+        df2.loc[df2['name'].isin(newList), "value"] = True
+        df2.loc[~df2['name'].isin(newList), "value"] = False
+        
+        for index, row in df2.iterrows():
+            if (row["value"]):
+                cursor.execute("""UPDATE [dbo].[Settings] SET value = 1 
+                       WHERE name = '""" + row['name'] + "'")
+            else:
+                cursor.execute("""UPDATE [dbo].[Settings] SET value = 0 
+                       WHERE name = '""" + row['name'] + "'")                
+        cnxn.commit() 
+        return render_template('settings.html', table=df2.values.tolist())
+    else:
+        return render_template('settings.html', table=df2.values.tolist())
     
 if __name__ == "__main__":
     app.run(debug=True)

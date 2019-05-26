@@ -9,7 +9,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>Team Pally -VIDEO-</title>
+  <title>Team Pally -CHARACTER-</title>
 
   <!-- Custom fonts for this template-->
   <link href="../static/css/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -17,6 +17,7 @@
 
   <!-- Custom styles for this template-->
   <link href="../static/css/sb-admin-2.min.css" rel="stylesheet">
+
 
 </head>
 
@@ -332,61 +333,148 @@
         <div class="container-fluid">
 
           <!-- Page Heading -->
-          <h1 class="h3 mb-2 text-gray-800">Video</h1>
-          <p class="mb-4">Chart.js is a third party plugin that is used to generate the charts in this theme. The charts below have been customized - for further customization options, please visit the <a target="_blank" href="https://www.chartjs.org/docs/latest/">official Chart.js documentation</a>.</p>
+          <h1 class="h3 mb-4 text-gray-800">Characters</h1>
 
-          <!-- Content Row -->
           <div class="row">
 
-            <div class="col-xl-8 col-lg-7">
+            <div class="col-lg-6">
 
-              <!-- Area Chart -->
+              <!-- Circle Buttons -->
               <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Area Chart</h6>
+                  <h6 class="m-0 font-weight-bold text-primary">Choose your main character</h6>
                 </div>
                 <div class="card-body">
-                  <div class="chart-area">
-                    <canvas id="myAreaChart"></canvas>
-                  </div>
-                  <hr>
-                  Styling for the area chart can be found in the <code>/js/demo/chart-area-demo.js</code> file.
+                  <p>Choose the character with the motion that you will be interacting with.</p>
+                  <form action="{{ url_for('hello4') }}" method="POST">
+				  <table border="1" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+					<thead>    
+						<tr style="text-align: right;">    
+							<th>Name</th> 
+							<th>Value</th>
+						</tr>  
+					</thead>  
+					<tbody>  
+						{% for row in table %}
+							<tr>        
+								<td>{{row[0]}}</td>    			
+								{% if row[1] == True %}
+									<td>
+										<input type="checkbox" id="id_{{row[0]}}" name="chara" value="{{row[0]}}" checked=True>
+									</td>  
+								{% else %}
+									<td>
+										<input type="checkbox" id="id_{{row[0]}}" name="chara" value="{{row[0]}}">
+									</td>  
+								{% endif %}
+							</tr>
+						{% endfor %}
+					</tbody>
+
+					<button type="submit" value="Submit" class="btn btn-secondary btn-icon-split">
+						<span class="icon text-gray-600">
+						  <i class="fas fa-arrow-right"></i>
+						</span>
+						<span class="text">Submit</span>
+					</button>
+					</form>
+				</table>
+
                 </div>
               </div>
 
-              <!-- Bar Chart -->
+              <!-- Brand Buttons -->
               <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Bar Chart</h6>
+                  <h6 class="m-0 font-weight-bold text-primary">Brand Buttons</h6>
                 </div>
                 <div class="card-body">
-                  <div class="chart-bar">
-                    <canvas id="myBarChart"></canvas>
-                  </div>
-                  <hr>
-                  Styling for the bar chart can be found in the <code>/js/demo/chart-bar-demo.js</code> file.
+                  <p>Google and Facebook buttons are available featuring each company's respective brand color. They are used on the user login and registration pages.</p>
+                  <p>You can create more custom buttons by adding a new color variable in the <code>_variables.scss</code> file and then using the Bootstrap button variant mixin to create a new style, as demonstrated in the <code>_buttons.scss</code> file.</p>
+                  <a href="#" class="btn btn-google btn-block"><i class="fab fa-google fa-fw"></i> .btn-google</a>
+                  <a href="#" class="btn btn-facebook btn-block"><i class="fab fa-facebook-f fa-fw"></i> .btn-facebook</a>
+
                 </div>
               </div>
 
             </div>
 
-            <!-- Donut Chart -->
-            <div class="col-xl-4 col-lg-5">
+            <div class="col-lg-6">
+
               <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
                 <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Donut Chart</h6>
+                  <h6 class="m-0 font-weight-bold text-primary">Split Buttons with Icon</h6>
                 </div>
-                <!-- Card Body -->
                 <div class="card-body">
-                  <div class="chart-pie pt-4">
-                    <canvas id="myPieChart"></canvas>
-                  </div>
-                  <hr>
-                  Styling for the donut chart can be found in the <code>/js/demo/chart-pie-demo.js</code> file.
+                  <p>Works with any button colors, just use the <code>.btn-icon-split</code> class and the markup in the examples below. The examples below also use the <code>.text-white-50</code> helper class on the icons for additional styling, but it is not required.</p>
+                  <a href="#" class="btn btn-primary btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-flag"></i>
+                    </span>
+                    <span class="text">Split Button Primary</span>
+                  </a>
+                  <div class="my-2"></div>
+                  <a href="#" class="btn btn-success btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-check"></i>
+                    </span>
+                    <span class="text">Split Button Success</span>
+                  </a>
+                  <div class="my-2"></div>
+                  <a href="#" class="btn btn-info btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-info-circle"></i>
+                    </span>
+                    <span class="text">Split Button Info</span>
+                  </a>
+                  <div class="my-2"></div>
+                  <a href="#" class="btn btn-warning btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-exclamation-triangle"></i>
+                    </span>
+                    <span class="text">Split Button Warning</span>
+                  </a>
+                  <div class="my-2"></div>
+                  <a href="#" class="btn btn-danger btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-trash"></i>
+                    </span>
+                    <span class="text">Split Button Danger</span>
+                  </a>
+                  <div class="my-2"></div>
+                  <a href="#" class="btn btn-secondary btn-icon-split">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-arrow-right"></i>
+                    </span>
+                    <span class="text">Split Button Secondary</span>
+                  </a>
+                  <div class="my-2"></div>
+                  <a href="#" class="btn btn-light btn-icon-split">
+                    <span class="icon text-gray-600">
+                      <i class="fas fa-arrow-right"></i>
+                    </span>
+                    <span class="text">Split Button Primary</span>
+                  </a>
+                  <div class="mb-4"></div>
+                  <p>Also works with small and large button classes!</p>
+                  <a href="#" class="btn btn-primary btn-icon-split btn-sm">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-flag"></i>
+                    </span>
+                    <span class="text">Split Button Small</span>
+                  </a>
+                  <div class="my-2"></div>
+                  <a href="#" class="btn btn-primary btn-icon-split btn-lg">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-flag"></i>
+                    </span>
+                    <span class="text">Split Button Large</span>
+                  </a>
                 </div>
               </div>
+
             </div>
+
           </div>
 
         </div>
@@ -436,23 +524,14 @@
   </div>
 
   <!-- Bootstrap core JavaScript-->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
+  <script src="../static/js/vendor/jquery/jquery.min.js"></script>
+  <script src="../static/css/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- Core plugin JavaScript-->
-  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="../static/js/vendor/jquery-easing/jquery.easing.min.js"></script>
+
 
   <!-- Custom scripts for all pages-->
-  <script src="js/sb-admin-2.min.js"></script>
-
-  <!-- Page level plugins -->
-  <script src="vendor/chart.js/Chart.min.js"></script>
-
-  <!-- Page level custom scripts -->
-  <script src="js/demo/chart-area-demo.js"></script>
-  <script src="js/demo/chart-pie-demo.js"></script>
-  <script src="js/demo/chart-bar-demo.js"></script>
-
+  <script src="../static/js/sb-admin-2.min.js"></script>
 </body>
 
 </html>
