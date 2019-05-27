@@ -77,16 +77,24 @@ def hello3():
                       ";Uid=" + username + ";Pwd=" + password + ";")
     cnxn.add_output_converter(-155, handle_datetimeoffset)
     cursor = cnxn.cursor()
+    
     cursor.execute("SELECT * FROM [dbo].[Character1]")
     row = cursor.fetchall()
-    
     df = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt", 
                                     "version", "deleted", "name", 
-                                    "selected", "character"])
+                                    "selected", "character", "displayName"])
+    df2 = df[['name', 'selected', 'displayName']]
     
-    df2 = df[['name', 'selected', 'character']]
-
+    cursor.execute("SELECT * FROM [dbo].[Character2]")
+    row = cursor.fetchall()
+    df3 = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt", 
+                                    "version", "deleted", "name", 
+                                    "selected", "character", "displayName", "action"])
+    df4 = df3[['displayName', 'selected', 'action']]
+    
     if request.method == "POST":
+        print(request.form['chara'])
+        print(request.form['chara2'])
         df2.loc[df2['name'] == request.form['chara'], "selected"] = True
         df2.loc[df2['name'] != request.form['chara'], "selected"] = False
         
@@ -97,10 +105,24 @@ def hello3():
         for index, row in elements.iterrows():
             cursor.execute("""UPDATE [dbo].[Character1] SET selected = 0 
                        WHERE name = '""" + row['name'] + "'")
+
+        df4.loc[df4['name'] == request.form['chara2'], "selected"] = True
+        df4.loc[df4['name'] != request.form['chara2'], "selected"] = False
+        
+        cursor.execute("""UPDATE [dbo].[Character2] SET selected = 1 
+                       WHERE name = '""" + request.form['chara2'] + "'")
+        
+        elements = df4.loc[df4['name'] != request.form['chara2'], ]
+        for index, row in elements.iterrows():
+            cursor.execute("""UPDATE [dbo].[Character2] SET selected = 0 
+                       WHERE name = '""" + row['name'] + "'")
         cnxn.commit()   
-        return render_template('character.html', table=df2.values.tolist())
+        
+        return render_template('character.html', table=df2.values.tolist(),
+                                                 table2=df4.values.tolist())
     else:
-        return render_template('character.html', table=df2.values.tolist())
+        return render_template('character.html', table=df2.values.tolist(),
+                                                 table2=df4.values.tolist())
    
 @app.route("/setting", methods=["GET", "POST"])
 def hello4():
@@ -109,17 +131,25 @@ def hello4():
                       ";Uid=" + username + ";Pwd=" + password + ";")
     cnxn.add_output_converter(-155, handle_datetimeoffset)
     cursor = cnxn.cursor()
+    
     cursor.execute("SELECT * FROM [dbo].[Settings]")
     row = cursor.fetchall()
-    
     df = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt", 
-                                    "version", "deleted", "name", 
-                                    "value"])
-    
+                                    "version", "deleted", "name", "value"])
     df2 = df[['name', 'value']]
-
+    
+    cursor.execute("SELECT * FROM [dbo].[Position]")
+    row = cursor.fetchall()
+    df3 = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt", 
+                                    "version", "deleted", "posX", "posY", "posZ"])
+    df4 = pd.DataFrame(columns=['Name', 'Value'])
+    df4.loc[0] = ['posX', df3.loc[0, 'posX']]
+    df4.loc[1] = ['posY', df3.loc[0, 'posY']]
+    df4.loc[2] = ['posZ', df3.loc[0, 'posZ']]
+    
     if request.method == "POST":
         newList = request.form.getlist('chara')
+        newVal = request.form.getlist('chara2')
         
         df2.loc[df2['name'].isin(newList), "value"] = True
         df2.loc[~df2['name'].isin(newList), "value"] = False
@@ -130,11 +160,20 @@ def hello4():
                        WHERE name = '""" + row['name'] + "'")
             else:
                 cursor.execute("""UPDATE [dbo].[Settings] SET value = 0 
-                       WHERE name = '""" + row['name'] + "'")                
+                       WHERE name = '""" + row['name'] + "'")
+
+        df4.loc[0, 'Value'] = newVal[0]
+        df4.loc[1, 'Value'] = newVal[1]
+        df4.loc[2, 'Value'] = newVal[2]              
+        for index, row in df4.iterrows():
+            cursor.execute("UPDATE [dbo].[Position] SET " + row['Name'] + " = " + row["Value"])
         cnxn.commit() 
-        return render_template('settings.html', table=df2.values.tolist())
+        
+        return render_template('settings.html', table=df2.values.tolist(),
+                                                table2=df4.values.tolist())
     else:
-        return render_template('settings.html', table=df2.values.tolist())
+        return render_template('settings.html', table=df2.values.tolist(),
+                                                table2=df4.values.tolist())
     
 if __name__ == "__main__":
     app.run(debug=True)
