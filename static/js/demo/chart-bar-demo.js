@@ -32,14 +32,27 @@ var ctx = document.getElementById("myBarChart");
 var myBarChart = new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: ["January", "February", "March", "April", "May", "June"],
-    datasets: [{
-      label: "Revenue",
-      backgroundColor: "#4e73df",
-      hoverBackgroundColor: "#2e59d9",
-      borderColor: "#4e73df",
-      data: [4215, 5312, 6251, 7841, 9821, 14984],
-    }],
+    labels: [ "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/22"],
+    datasets: [
+	{
+      label: "Patrick",
+      backgroundColor: "rgba(78, 115, 223, 0.8)",
+      borderColor: "rgba(78, 115, 223, 1)",
+      data: [36, 34, 33, 30, 28, 26, 24]
+    },
+	{
+      label: "Jullia",
+      backgroundColor: "rgba(231, 74, 59, 0.8)",
+      borderColor: "rgba(231, 74, 59, 1)",
+      data: [46, 37, 40, 38, 34, 42, 38]
+    },
+	{
+      label: "Leven",
+      backgroundColor: "rgba(28, 200, 138, 0.8)",
+      borderColor: "rgba(28, 200, 138, 1)",
+      data: [35, 37, 33, 34, 36, 32, 28]
+    }
+	],
   },
   options: {
     maintainAspectRatio: false,
@@ -61,19 +74,19 @@ var myBarChart = new Chart(ctx, {
           drawBorder: false
         },
         ticks: {
-          maxTicksLimit: 6
+
         },
         maxBarThickness: 25,
       }],
       yAxes: [{
         ticks: {
           min: 0,
-          max: 15000,
+          max: 50,
           maxTicksLimit: 5,
-          padding: 10,
+          padding: 5,
           // Include a dollar sign in the ticks
           callback: function(value, index, values) {
-            return '$' + number_format(value);
+            return number_format(value);
           }
         },
         gridLines: {
@@ -103,7 +116,7 @@ var myBarChart = new Chart(ctx, {
       callbacks: {
         label: function(tooltipItem, chart) {
           var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+          return datasetLabel + ': ' + number_format(tooltipItem.yLabel);
         }
       }
     },
