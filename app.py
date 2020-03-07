@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, redirect, url_for
-from flask_restful import Api, reqparse
+from flask_restful import Api
 from dotenv import load_dotenv
 
 import pallyobjects as po
@@ -8,8 +8,7 @@ import pyodbc
 import struct
 import os
 
-app = Flask(__name__)
-
+#%%
 def handle_datetimeoffset(dto_value):
     tup = struct.unpack("<6hI2h", dto_value)
     tweaked = [tup[i] // 100 if i == 6 else tup[i] for i in range(len(tup))]
@@ -18,6 +17,7 @@ def handle_datetimeoffset(dto_value):
 project_folder = os.path.expanduser('~/pallywebapp2')
 load_dotenv(os.path.join(project_folder, '.env'))
 
+#%%
 cnxn = pyodbc.connect(
     'DSN=sqlserverdatasource;database=PallyDB;Uid='
     + os.getenv("PALLYUSERNAME")
@@ -27,7 +27,24 @@ cnxn = pyodbc.connect(
 cnxn.add_output_converter(-155, handle_datetimeoffset)
 cursor = cnxn.cursor()
 
+#%%
+app = Flask(__name__)
 
+api = Api(app)
+api.add_resource(po.Settings, '/sql/settings',
+    resource_class_kwargs={ 'cursor': cursor })
+api.add_resource(po.Character1, '/sql/character1',
+    resource_class_kwargs={ 'cursor': cursor })
+api.add_resource(po.Character2, '/sql/character2',
+    resource_class_kwargs={ 'cursor': cursor })
+api.add_resource(po.Position, '/sql/position',
+    resource_class_kwargs={ 'cursor': cursor })
+api.add_resource(po.Position2, '/sql/position2',
+    resource_class_kwargs={ 'cursor': cursor })
+api.add_resource(po.SpatialAnchor, '/sql/anchor',
+    resource_class_kwargs={ 'cursor': cursor, 'cnxn': cnxn })
+
+#%%
 @app.route("/", methods=["GET", "POST"])
 def hello_main():
     error = None
@@ -35,22 +52,25 @@ def hello_main():
         if request.form['password'] != 'qwertyuiop':
             error = 'Invalid Credentials. Please try again.'
         else:
-            return redirect(url_for('hello0'))
+            return redirect(url_for('hello_index'))
     return render_template('login.html', error=error)
 
+#%%
 @app.route("/register", methods=["GET", "POST"])
 def hello_reg():
     error = None
     if request.method == 'POST':
-        return redirect(url_for('hello0'))
+        return redirect(url_for('hello_index'))
     return render_template('register.html', error=error)
 
+#%%
 @app.route("/index", methods=["GET", "POST"])
-def hello0():
+def hello_index():
     return render_template('index.html')
 
+#%%
 @app.route("/results", methods=["GET", "POST"])
-def hello():
+def hello_results():
     cursor.execute("SELECT * FROM [dbo].[LUItem]")
     row = cursor.fetchall()
 
@@ -69,8 +89,9 @@ def hello():
 
     return render_template('tables.html', table = table.__html__())
 
+#%%
 @app.route("/video", methods=["GET", "POST"])
-def hello2():
+def hello_video():
     if request.method == 'POST':
         print(request.form['ip'])
         return render_template('video.html',
@@ -78,9 +99,9 @@ def hello2():
     return render_template('video.html',
           source='<source src="http://10.200.4.46/api/holographic/stream/live_high.mp4?holo=true&pv=true&mic=false&loopback=true" type="video/mp4">''')
 
-
+#%%
 @app.route("/quest", methods=["GET", "POST"])
-def hello3():
+def hello_quest():
     cursor.execute("SELECT * FROM [dbo].[Character1]")
     row = cursor.fetchall()
     df = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt",
@@ -141,8 +162,9 @@ def hello3():
                                                  table2=df4.values.tolist(),
                                                  table3=df6.values.tolist())
 
+#%%
 @app.route("/setting", methods=["GET", "POST"])
-def hello4():
+def hello_setting():
     cursor.execute("SELECT * FROM [dbo].[Settings]")
     row = cursor.fetchall()
     df = pd.DataFrame([list(t) for t in row], columns=["Id", "createAt", "updatedAt",
@@ -207,15 +229,8 @@ def hello4():
                                                 table2=df4.values.tolist(),
                                                 table3=df6.values.tolist())
 
+#%%
 if __name__ == "__main__":
-    api = Api(app)
-    api.add_resource(po.Settings, '/sql/settings')
-    api.add_resource(po.Character1, '/sql/character1')
-    api.add_resource(po.Character2, '/sql/character2')
-    api.add_resource(po.Position, '/sql/position')
-    api.add_resource(po.Position2, '/sql/position2')
-    api.add_resource(po.SpatialAnchor, '/sql/anchor')
-
     app.run(debug=True)
 
 
