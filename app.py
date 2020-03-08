@@ -2,8 +2,13 @@ from flask import Flask, request, render_template, redirect, url_for
 from flask_restful import Api
 from dotenv import load_dotenv
 
+from slack import WebClient
+from slackeventsapi import SlackEventAdapter
+from onboarding_tutorial import OnboardingTutorial
+
 import pallyobjects as po
 import pandas as pd
+import logging
 import pyodbc
 import struct
 import os
@@ -43,6 +48,13 @@ api.add_resource(po.Position2, '/sql/position2',
     resource_class_kwargs={ 'cursor': cursor })
 api.add_resource(po.SpatialAnchor, '/sql/anchor',
     resource_class_kwargs={ 'cursor': cursor, 'cnxn': cnxn })
+
+#%%
+slack_events_adapter = SlackEventAdapter(
+    os.getenv('SIGNINGSECRET'), '/slack/events', app)
+slack_web_client = WebClient(token = os.getenv('SLACKAPPTOKEN1'))
+
+onboarding_tutorials_sent = {}
 
 #%%
 @app.route("/", methods=["GET", "POST"])
@@ -228,6 +240,79 @@ def hello_setting():
         return render_template('settings.html', table=df2.values.tolist(),
                                                 table2=df4.values.tolist(),
                                                 table3=df6.values.tolist())
+
+#%%
+def start_onboarding(user_id, channel):
+    onboarding_tutorial = OnboardingTutorial(channel)
+    message = onboarding_tutorial.get_message_payload()
+
+    response = slack_web_client.chat_postMessage(**message)
+    onboarding_tutorial.timestamp = response["ts"]
+
+    if channel not in onboarding_tutorials_sent:
+        onboarding_tutorials_sent[channel] = {}
+    onboarding_tutorials_sent[channel][user_id] = onboarding_tutorial
+
+#%%
+@slack_events_adapter.on("team_join")
+def onboarding_message(payload):
+    event = payload.get("event", {})
+    user_id = event.get("user", {}).get("id")
+
+    response = slack_web_client.im_open(user_id)
+    channel = response["channel"]["id"]
+
+    start_onboarding(user_id, channel)
+
+@slack_events_adapter.on("reaction_added")
+def update_emoji(payload):
+    # Identify user_id, channel from payload
+    event = payload.get("event", {})
+    user_id = event.get("user")
+    channel_id = event.get("item", {}).get("channel")
+
+    # If onboarding tutorials not sent on channel, return
+    if channel_id not in onboarding_tutorials_sent:
+        return
+
+    # Else, get message from the dict & update the chat based on message
+    onboarding_tutorial = onboarding_tutorials_sent[channel_id][user_id]
+    onboarding_tutorial.reaction_task_completed = True
+    message = onboarding_tutorial.get_message_payload()
+
+    updated_message = slack_web_client.chat_update(**message)
+    onboarding_tutorial.timestamp = updated_message["ts"]
+
+@slack_events_adapter.on("pin_added")
+def update_pin(payload):
+    event = payload.get("event", {})
+    channel_id = event.get("channel_id")
+    user_id = event.get("user")
+
+    if channel_id not in onboarding_tutorials_sent:
+        return
+
+    onboarding_tutorial = onboarding_tutorials_sent[channel_id][user_id]
+    onboarding_tutorial.pin_task_completed = True
+    message = onboarding_tutorial.get_message_payload()
+
+    updated_message = slack_web_client.chat_update(**message)
+    onboarding_tutorial.timestamp = updated_message["ts"]
+
+@slack_events_adapter.on("message")
+def message(payload):
+    print(payload)
+    event = payload.get("event", {})
+    channel_id = event.get("channel")
+    user_id = event.get("user")
+    text = event.get("text")
+
+    if text:
+        return start_onboarding(user_id, channel_id)
+
+# logger = logging.getLogger()
+# logger.setLevel(logging.DEBUG)
+# logger.addHandler(logging.FileHandler("server.log"))
 
 #%%
 if __name__ == "__main__":
